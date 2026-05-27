@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTM Event Entry</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+.container { max-width: 740px; margin: 0 auto; }
+h1 { font-size: 23px; font-weight: 600; display: flex; align-items: center; gap: 9px; margin-bottom: 5px; }
+.sub { font-size: 14px; color: #5f5e5a; line-height: 1.6; margin-bottom: 1.5rem; }
+.targets { display: flex; gap: 8px; margin-bottom: 1.75rem; flex-wrap: wrap; }
+.tag { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px; background: #e1f5ee; color: #0f6e56; border: 1px solid #5dcaa5; }
+.tag.blue { background: #e6f1fb; color: #0c447c; border-color: #85b7eb; }
+.card { background: #fff; border: 1px solid #e0dfd8; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+.card-title { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: #888780; margin-bottom: 1rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.span2 { grid-column: span 2; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+label { font-size: 13px; font-weight: 500; color: #5f5e5a; }
+input[type=text], input[type=password], textarea {
+  font-family: inherit; font-size: 14px; color: #1a1a18;
+  background: #faf9f7; border: 1px solid #d3d1c7; border-radius: 8px;
+  padding: 8px 11px; width: 100%; outline: none; transition: border-color .15s, box-shadow .15s; }
+input:focus, textarea:focus { border-color: #1d9e75; box-shadow: 0 0 0 3px rgba(29,158,117,.12); background: #fff; }
+textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.pill { display: inline-flex; align-items: center; padding: 5px 13px; border-radius: 20px;
+  font-size: 13px; cursor: pointer; user-select: none; transition: all .12s;
+  border: 1px solid #d3d1c7; background: #faf9f7; color: #5f5e5a; }
+.pill input[type=radio] { display: none; }
+.pill.on { background: #e1f5ee; color: #085041; border-color: #5dcaa5; font-weight: 500; }
+.pill.major.on  { background: #e6f1fb; color: #0c447c; border-color: #85b7eb; }
+.pill.minor.on  { background: #faeeda; color: #633806; border-color: #ef9f27; }
+.pill.offsite.on { background: #fbeaf0; color: #72243e; border-color: #ed93b1; }
+.pill.tbd.on    { background: #f1efe8; color: #444441; border-color: #b4b2a9; }
+/* Conf auth */
+.conf-row { display: flex; gap: 8px; align-items: flex-end; }
+.conf-row .field { flex: 1; }
+.btn-test { padding: 9px 14px; font-size: 13px; font-weight: 500; border-radius: 8px;
+  background: #0f6e56; color: #fff; border: none; cursor: pointer; white-space: nowrap; font-family: inherit; }
+.btn-test:hover { background: #085041; }
+.auth-note { font-size: 12px; color: #5f5e5a; margin-top: 8px; line-height: 1.5; }
+.auth-note a { color: #0f6e56; }
+.auth-status { font-size: 12px; margin-top: 5px; }
+.ok { color: #0f6e56; font-weight: 500; }
+.err { color: #a32d2d; }
+/* How it works banner */
+.how { background: #e6f1fb; border: 1px solid #85b7eb; border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 1rem; font-size: 13px; color: #0c447c; line-height: 1.7; }
+.how strong { color: #042c53; }
+/* Actions */
+.actions { display: flex; gap: 10px; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; }
+.btn-submit { display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px;
+  border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  background: #0f6e56; color: #fff; border: none; }
+.btn-submit:hover { background: #085041; }
+.btn-submit:disabled { opacity: .45; cursor: not-allowed; }
+.btn-clear { padding: 11px 16px; background: transparent; color: #5f5e5a;
+  border: 1px solid #d3d1c7; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
+.btn-clear:hover { background: #f5f4f0; }
+/* Progress */
+.progress { display: none; margin-top: 1.25rem; background: #fff; border: 1px solid #e0dfd8; border-radius: 12px; overflow: hidden; }
+.progress.show { display: block; }
+.prog-header { padding: 10px 16px; background: #f5f4f0; font-size: 12px; font-weight: 600; color: #5f5e5a; letter-spacing: .04em; text-transform: uppercase; }
+.prog-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.prog-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #b4b2a9; }
+.prog-item.active { color: #1a1a18; }
+.prog-item.done { color: #0f6e56; }
+.prog-item.fail { color: #a32d2d; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #d3d1c7; flex-shrink: 0; }
+.prog-item.active .dot { background: #378add; animation: pulse 1s infinite; }
+.prog-item.done .dot { background: #1d9e75; }
+.prog-item.fail .dot { background: #e24b4a; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+.prog-success { padding: 12px 16px; background: #e1f5ee; border-top: 1px solid #9fe1cb; font-size: 13px; color: #085041; font-weight: 500; display: none; }
+.prog-success.show { display: block; }
+.prog-error { padding: 12px 16px; background: #fcebeb; border-top: 1px solid #f09595; font-size: 13px; color: #791f1f; display: none; }
+.prog-error.show { display: block; }
+.hint { font-size: 11px; color: #b4b2a9; margin-top: 3px; }
+/* Waiting for Claude state */
+.waiting { padding: 12px 16px; background: #faeeda; border-top: 1px solid #ef9f27; font-size: 13px; color: #633806; display: none; }
+.waiting.show { display: block; }
+@media (max-width: 560px) { .grid2, .grid3 { grid-template-columns: 1fr; } .span2 { grid-column: span 1; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>📅 GTM Event Entry</h1>
+  <p class="sub">Fill in the event details and click Submit. Confluence is updated directly by this tool. SharePoint is updated by Claude via the chat window.</p>
+  <div class="targets">
+    <span class="tag">📊 GTM_Event_Timeline_2026.xlsx → via Claude</span>
+    <span class="tag blue">🌐 Confluence Event Calendar → direct API</span>
+  </div>
+
+  <div class="how">
+    <strong>How it works:</strong><br>
+    1. This tool calls the Confluence REST API directly using your token below.<br>
+    2. For SharePoint, it sends the event data to Claude in the chat — Claude writes the Excel row using its existing Microsoft 365 connection. Keep the Claude tab open when you submit.
+  </div>
+
+  <!-- Confluence token -->
+  <div class="card">
+    <div class="card-title">🔑 Confluence — Personal Access Token</div>
+    <div class="conf-row">
+      <div class="field">
+        <label for="cf-token">Personal Access Token</label>
+        <input id="cf-token" type="password" placeholder="Paste your Confluence token here">
+      </div>
+      <button class="btn-test" onclick="testConf()">Test</button>
+    </div>
+    <div class="auth-status" id="cf-status"></div>
+    <p class="auth-note">Generate at: <a href="https://confluence.newegg.org/plugins/personalaccesstokens/usertokens.action" target="_blank">Confluence → Profile → Personal Access Tokens ↗</a></p>
+  </div>
+
+  <!-- Event Details -->
+  <div class="card">
+    <div class="card-title">📋 Event details</div>
+    <div class="grid2">
+      <div class="field"><label for="ev-name">Event name *</label><input id="ev-name" type="text" placeholder="e.g. Intel Gamers Day Event"></div>
+      <div class="field"><label for="ev-date">Date *</label><input id="ev-date" type="text" placeholder="e.g. Aug 12, 2026"></div>
+      <div class="field">
+        <label>Category</label>
+        <div class="pills" id="cat-group">
+          <label class="pill major on"><input type="radio" name="cat" value="Major" checked> Major</label>
+          <label class="pill minor"><input type="radio" name="cat" value="Minor"> Minor</label>
+          <label class="pill offsite"><input type="radio" name="cat" value="Offsite"> Offsite</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <div class="pills" id="st-group">
+          <label class="pill on"><input type="radio" name="st" value="Confirmed" checked> Confirmed</label>
+          <label class="pill tbd"><input type="radio" name="st" value="TBD"> TBD</label>
+        </div>
+      </div>
+      <div class="field span2"><label for="ev-desc">Description</label><textarea id="ev-desc" placeholder="Brief summary of the event…"></textarea></div>
+    </div>
+  </div>
+
+  <!-- Logistics -->
+  <div class="card">
+    <div class="card-title">📍 Logistics</div>
+    <div class="grid3">
+      <div class="field">
+        <label>Venue</label>
+        <div class="pills" id="ven-group">
+          <label class="pill on"><input type="radio" name="ven" value="Onsite" checked> Onsite</label>
+          <label class="pill"><input type="radio" name="ven" value="Offsite"> Offsite</label>
+        </div>
+        <input id="ev-vloc" type="text" placeholder="Location if offsite" style="margin-top:8px">
+      </div>
+      <div class="field"><label for="ev-pic">PIC</label><input id="ev-pic" type="text" placeholder="e.g. Katie Lau"></div>
+      <div class="field"><label for="ev-att">Attendees</label><input id="ev-att" type="text" placeholder="e.g. Public, Esports teams"></div>
+    </div>
+  </div>
+
+  <!-- Team & Budget -->
+  <div class="card">
+    <div class="card-title">👥 Team &amp; budget</div>
+    <div class="grid2">
+      <div class="field"><label for="ev-mkt">Marketing team</label><input id="ev-mkt" type="text" placeholder="e.g. Katie Lau, Cindy Lam"></div>
+      <div class="field"><label for="ev-pm">PM team</label><input id="ev-pm" type="text" placeholder="e.g. Jim Tseng, Steven Chien"></div>
+      <div class="field"><label for="ev-vendor">Vendor / partner</label><input id="ev-vendor" type="text" placeholder="e.g. Intel, ASUS Team"></div>
+      <div class="field"><label for="ev-budget">Event budget</label><input id="ev-budget" type="text" placeholder="e.g. $800 food budget"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-submit" id="sub-btn" onclick="submitEvent()">▶ Submit event</button>
+    <button class="btn-clear" onclick="clearForm()">↺ Clear</button>
+  </div>
+
+  <div class="progress" id="progress">
+    <div class="prog-header">Progress</div>
+    <div class="prog-list">
+      <div class="prog-item" id="p1"><span class="dot"></span>Reading Confluence Event Calendar</div>
+      <div class="prog-item" id="p2"><span class="dot"></span>Publishing event to Confluence</div>
+      <div class="prog-item" id="p3"><span class="dot"></span>Sending SharePoint update to Claude</div>
+    </div>
+    <div class="prog-success" id="prog-success"></div>
+    <div class="waiting" id="waiting">⏳ Switch to the Claude chat tab — Claude is now updating the SharePoint Excel row.</div>
+    <div class="prog-error" id="prog-error"></div>
+  </div>
+
+</div>
+<script>
+var CONF_BASE  = 'https://confluence.newegg.org';
+var CONF_SPACE = 'GME';
+var CONF_TITLE = 'Event Calendar';
+
+// Confluence test
+async function testConf() {
+  var t = gv('cf-token'), st = document.getElementById('cf-status');
+  if (!t) { st.textContent = 'Paste a token first.'; st.className = 'auth-status err'; return; }
+  st.textContent = 'Testing…'; st.className = 'auth-status';
+  try {
+    var r = await fetch(CONF_BASE + '/rest/api/user/current', {
+      headers: { Authorization: 'Bearer ' + t, Accept: 'application/json' }
+    });
+    var d = await r.json();
+    if (r.ok) { st.textContent = '✓ Signed in as ' + d.displayName; st.className = 'auth-status ok'; }
+    else { st.textContent = '✗ ' + (d.message || 'Invalid token'); st.className = 'auth-status err'; }
+  } catch(e) { st.textContent = '✗ Request failed — check CORS or network: ' + e.message; st.className = 'auth-status err'; }
+}
+
+// Pill toggles
+document.querySelectorAll('.pills').forEach(function(g) {
+  g.querySelectorAll('.pill').forEach(function(p) {
+    p.addEventListener('click', function() {
+      g.querySelectorAll('.pill').forEach(function(x) { x.classList.remove('on'); });
+      p.classList.add('on');
+    });
+  });
+});
+
+function gv(id) { return (document.getElementById(id) || {}).value || ''; }
+function radio(n) { var e = document.querySelector('input[name="'+n+'"]:checked'); return e ? e.value : ''; }
+function setState(id, s) { var e = document.getElementById(id); if (e) e.className = 'prog-item' + (s ? ' '+s : ''); }
+function showEl(id, msg) { var e = document.getElementById(id); if (!e) return; if (msg !== undefined) e.textContent = msg; e.classList.add('show'); }
+function hideEl(id) { var e = document.getElementById(id); if (e) e.classList.remove('show'); }
+
+function clearForm() {
+  ['ev-name','ev-date','ev-desc','ev-vloc','ev-pic','ev-att','ev-mkt','ev-pm','ev-vendor','ev-budget'].forEach(function(id) {
+    var e = document.getElementById(id); if (e) e.value = '';
+  });
+  document.querySelectorAll('.pills').forEach(function(g) {
+    var ps = g.querySelectorAll('.pill'), rs = g.querySelectorAll('input[type=radio]');
+    ps.forEach(function(p, i) { p.classList.toggle('on', i === 0); });
+    if (rs[0]) rs[0].checked = true;
+  });
+  document.getElementById('progress').classList.remove('show');
+  hideEl('prog-success'); hideEl('prog-error'); hideEl('waiting');
+  ['p1','p2','p3'].forEach(function(id) { setState(id, ''); });
+}
+
+async function submitEvent() {
+  var name = gv('ev-name'), date = gv('ev-date');
+  if (!name || !date) { alert('Event name and date are required.'); return; }
+  var cfToken = gv('cf-token');
+  if (!cfToken) { alert('Please add your Confluence Personal Access Token first.'); return; }
+
+  var ev = {
+    name: name, date: date, category: radio('cat'), status: radio('st'),
+    description: gv('ev-desc'), venue: gv('ev-vloc') || radio('ven'),
+    pic: gv('ev-pic'), attendees: gv('ev-att'),
+    mktTeam: gv('ev-mkt'), pmTeam: gv('ev-pm'),
+    vendor: gv('ev-vendor'), budget: gv('ev-budget')
+  };
+
+  var btn = document.getElementById('sub-btn');
+  btn.disabled = true;
+  document.getElementById('progress').classList.add('show');
+  hideEl('prog-success'); hideEl('prog-error'); hideEl('waiting');
+  ['p1','p2','p3'].forEach(function(id) { setState(id, ''); });
+
+  var confOk = false;
+
+  try {
+    // ── Step 1: Read Confluence page ─────────────────────────────────────
+    setState('p1', 'active');
+    var search = await fetch(CONF_BASE + '/rest/api/content?spaceKey=' + CONF_SPACE + '&title=' + encodeURIComponent(CONF_TITLE) + '&expand=body.storage,version', {
+      headers: { Authorization: 'Bearer ' + cfToken, Accept: 'application/json' }
+    });
+    if (!search.ok) throw new Error('Confluence auth failed (' + search.status + '). Check your token.');
+    var data = await search.json();
+    if (!data.results || !data.results.length) throw new Error('Page "' + CONF_TITLE + '" not found in space "' + CONF_SPACE + '".');
+    var page = data.results[0], pid = page.id, pver = page.version.number, pbody = page.body.storage.value;
+    setState('p1', 'done');
+
+    // ── Step 2: Update Confluence page ───────────────────────────────────
+    setState('p2', 'active');
+    var newRow = '<tr>'
+      + '<td><strong>' + esc(ev.date) + '</strong></td>'
+      + '<td>' + esc(ev.name) + '</td>'
+      + '<td>' + esc(ev.category) + '</td>'
+      + '<td>' + esc(ev.status) + '</td>'
+      + '<td>' + esc(ev.pic) + '</td>'
+      + '<td>' + esc(ev.venue) + '</td>'
+      + '<td>' + esc(ev.attendees) + '</td>'
+      + '<td>' + esc(ev.description) + '</td>'
+      + '</tr>';
+    var updated;
+    if (pbody.includes('</tbody>'))      updated = pbody.replace('</tbody>', newRow + '</tbody>');
+    else if (pbody.includes('</table>')) updated = pbody.replace('</table>', newRow + '</table>');
+    else updated = pbody + '<table><tbody>'
+      + '<tr><th>Date</th><th>Event</th><th>Category</th><th>Status</th><th>PIC</th><th>Venue</th><th>Attendees</th><th>Description</th></tr>'
+      + newRow + '</tbody></table>';
+
+    var put = await fetch(CONF_BASE + '/rest/api/content/' + pid, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + cfToken, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ id: pid, type: 'page', title: CONF_TITLE, version: { number: pver + 1 }, body: { storage: { value: updated, representation: 'storage' } } })
+    });
+    if (!put.ok) throw new Error('Confluence update failed (' + put.status + '): ' + await put.text());
+    setState('p2', 'done');
+    confOk = true;
+
+    // ── Step 3: Send SharePoint data to Claude ───────────────────────────
+    setState('p3', 'active');
+    var msg = 'GTM EVENT ENTRY — please add this row to GTM_Event_Timeline_2026.xlsx in SharePoint now:\n\n'
+      + 'Date: ' + ev.date + '\n'
+      + 'Status: ' + ev.status + '\n'
+      + 'Event Name: ' + ev.name + '\n'
+      + 'Category: ' + ev.category + '\n'
+      + 'Venue: ' + ev.venue + '\n'
+      + 'PIC: ' + (ev.pic || '—') + '\n'
+      + 'Marketing Team: ' + (ev.mktTeam || '—') + '\n'
+      + 'PM Team: ' + (ev.pmTeam || '—') + '\n'
+      + 'Vendor: ' + (ev.vendor || '—') + '\n'
+      + 'Attendees: ' + (ev.attendees || '—') + '\n'
+      + 'Description: ' + (ev.description || '—') + '\n'
+      + 'Budget: ' + (ev.budget || '—') + '\n\n'
+      + '(Confluence was already updated successfully.)';
+
+    // Copy to clipboard so user can paste into Claude
+    await navigator.clipboard.writeText(msg);
+    setState('p3', 'done');
+
+    showEl('prog-success', '✓ Confluence updated! The SharePoint message has been copied to your clipboard — paste it into Claude to complete the Excel update.');
+    showEl('waiting');
+
+  } catch(err) {
+    console.error(err);
+    ['p3','p2','p1'].forEach(function(id) {
+      if (document.getElementById(id).classList.contains('active')) setState(id, 'fail');
+    });
+    showEl('prog-error', '✗ ' + (err.message || String(err)));
+    if (confOk) showEl('waiting');
+  }
+  btn.disabled = false;
+}
+
+function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+</script>
+</body>
+</html>
